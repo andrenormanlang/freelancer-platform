@@ -1,3 +1,5 @@
+// src/components/Chat.tsx
+
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { User } from "../types/types";
 import { Button } from "./shadcn/ui/button";
@@ -8,7 +10,8 @@ import { format } from "date-fns";
 import { getChatMessages, createRoom } from "../services/MindsMeshAPI";
 import { v4 as uuidv4 } from "uuid";
 import { PaperClipIcon } from "@heroicons/react/20/solid";
-import { SocketContext } from "../contexts/SocketContext"; // Import SocketContext
+import { SocketContext } from "../contexts/SocketContext"; 
+
 
 interface Message {
   id: string;
@@ -17,6 +20,12 @@ interface Message {
   text: string;
   timestamp: Date;
   status?: "sending" | "sent" | "error";
+  isRead?: boolean; // Add this property
+}
+
+interface MessagesReadPayload {
+  senderId: string;
+  receiverId: string;
 }
 
 const formatTime = (date: Date) => {
@@ -25,7 +34,6 @@ const formatTime = (date: Date) => {
 
 const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   chatPartner,
-
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -37,8 +45,21 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   const { socket } = useContext(SocketContext); // Access socket from context
   const senderId = localStorage.getItem("userId");
 
-  // Accessing the user's data from Jotai atom
+  // Track window focus/blur
+  const [isActive, setIsActive] = useState(document.hasFocus());
 
+  useEffect(() => {
+    const handleFocus = () => setIsActive(true);
+    const handleBlur = () => setIsActive(false);
+
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   useEffect(() => {
     if (senderId && chatPartner) {
@@ -89,7 +110,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   }, []);
 
   const loadChatHistory = async () => {
-    if (senderId && chatPartner?.id) {
+    if (senderId && chatPartner?.id && socket) { // Ensure socket is available
       try {
         const response = await getChatMessages(senderId, chatPartner.id);
         setMessages(
@@ -99,9 +120,13 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
             receiverId: msg.receiver.id,
             text: msg.message,
             timestamp: new Date(msg.createdAt),
-            status: msg.isRead ? "sent" : "sending",
+            status: "sent",
+            isRead: msg.isRead, // Include isRead status
           }))
         );
+
+        // After loading messages, emit 'markAsRead' to mark all as read
+        socket.emit("markAsRead", { senderId: chatPartner.id, receiverId: senderId });
       } catch (error) {
         console.error("Error loading chat history:", error);
       }
@@ -110,12 +135,12 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
     }
   };
 
-  // Emit markAsRead when chat is opened
+  // Emit markAsRead when chat is opened and active
   useEffect(() => {
-    if (socket && senderId && chatPartner) {
+    if (isActive && socket && senderId && chatPartner) {
       socket.emit("markAsRead", { senderId: chatPartner.id, receiverId: senderId });
     }
-  }, [socket, senderId, chatPartner]);
+  }, [isActive, socket, senderId, chatPartner]);
 
   useEffect(() => {
     if (socket && senderId && chatPartner) {
@@ -145,16 +170,36 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
               ];
             }
           });
+
+          // Emit 'markAsRead' if the chat is active
+          if (isActive && chatPartner && message.senderId === chatPartner.id) {
+            socket.emit("markAsRead", { senderId: message.senderId, receiverId: senderId });
+          }
+        }
+      };
+
+      const handleMessagesRead = (data: MessagesReadPayload) => {
+        const { senderId: readSenderId, receiverId: readReceiverId } = data;
+        if (readSenderId === senderId && readReceiverId === chatPartner.id) {
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.senderId === senderId && !msg.isRead
+                ? { ...msg, isRead: true }
+                : msg
+            )
+          );
         }
       };
 
       socket.on("receiveMessage", handleReceiveMessage);
+      socket.on("messagesRead", handleMessagesRead);
 
       return () => {
         socket.off("receiveMessage", handleReceiveMessage);
+        socket.off("messagesRead", handleMessagesRead);
       };
     }
-  }, [socket, senderId, chatPartner]);
+  }, [socket, senderId, chatPartner, isActive]);
 
   useEffect(() => {
     if (!isConnecting) {
@@ -163,7 +208,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   }, [messages, isConnecting]);
 
   const handleSendMessage = async () => {
-    if (!senderId || !newMessage.trim() || !chatPartner) return;
+    if (!senderId || !newMessage.trim() || !chatPartner || !socket) return;
 
     const messageObj: Message = {
       id: uuidv4(),
@@ -172,15 +217,14 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       text: newMessage.trim(),
       timestamp: new Date(),
       status: "sending",
+      isRead: false, // Initialize as unread
     };
 
     setMessages((prev) => [...prev, messageObj]);
     setNewMessage("");
 
     try {
-      if (socket) {
-        socket.emit("sendMessage", messageObj);
-      }
+      socket.emit("sendMessage", messageObj);
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === messageObj.id ? { ...msg, status: "sent" } : msg
@@ -217,15 +261,12 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   };
 
   const renderMessageStatus = (message: Message) => {
-    switch (message.status) {
-      case "sending":
-        return <Loader2 className="h-3 w-3 animate-spin text-gray-400" />;
-      case "sent":
-        return <div className="w-3 h-3 rounded-full bg-blue-500" />;
-      case "error":
-        return <div className="w-3 h-3 rounded-full bg-red-500" />;
-      default:
-        return null;
+    if (message.senderId !== senderId) return null;
+
+    if (message.isRead) {
+      return <span className="text-xs text-blue-400">✓✓</span>; // Read
+    } else {
+      return <span className="text-xs text-gray-400">✓</span>; // Delivered
     }
   };
 
@@ -271,7 +312,6 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
                 )}
               </div>
             </div>
-            
           </div>
         ) : (
           <div className="flex-1 text-center">

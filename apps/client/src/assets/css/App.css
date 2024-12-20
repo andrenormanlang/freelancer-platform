@@ -1,0 +1,252 @@
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 10% 3.9%;
+  --radius: 0.5rem;
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #070707;
+  padding: 0.5rem 1rem;
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.navbar .navbarContent {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.navbar .navbarTitle {
+  font-size: 1.5rem;
+  font-family: "Bangers", cursive;
+  color: white;
+}
+
+.hamburgerIcon {
+  cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  width: 30px;
+  height: 24px;
+  position: relative;
+  z-index: 1100;
+  -webkit-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out;
+}
+.hamburgerIcon .bar {
+  height: 4px;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 2px;
+  -webkit-transition: all 0.6s ease-in-out;
+  transition: all 0.6s ease-in-out;
+}
+.hamburgerIcon .rotate45 {
+  -webkit-transform: rotate(45deg) translate(10px, 5px);
+          transform: rotate(45deg) translate(10px, 5px);
+}
+.hamburgerIcon .rotate-45 {
+  -webkit-transform: rotate(-45deg) translate(8px, -5px);
+          transform: rotate(-45deg) translate(8px, -5px);
+}
+.hamburgerIcon .opacity-0 {
+  opacity: 0;
+}
+
+.mobileMenu {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-transform: translateY(-100%);
+          transform: translateY(-100%);
+  -webkit-transition: opacity 0.5s ease, -webkit-transform 0.5s ease-in-out;
+  transition: opacity 0.5s ease, -webkit-transform 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease;
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease, -webkit-transform 0.5s ease-in-out;
+  z-index: 1000;
+  opacity: 0;
+}
+.mobileMenu.active {
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+  opacity: 1;
+}
+.mobileMenu .menuItem {
+  font-size: 1.25rem;
+  padding: 1rem;
+  -webkit-transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease;
+}
+.mobileMenu .menuItem:hover {
+  background-color: #444;
+}
+
+.dropdownMenuContent {
+  opacity: 0;
+  -webkit-transform: scale(0.95);
+          transform: scale(0.95);
+  -webkit-transition: opacity 0.3s ease, -webkit-transform 0.3s ease;
+  transition: opacity 0.3s ease, -webkit-transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease, -webkit-transform 0.3s ease;
+}
+.dropdownMenuContent.open {
+  opacity: 1;
+  -webkit-transform: scale(1);
+          transform: scale(1);
+}
+
+/* Search Bar Styling */
+.search-bar {
+  width: 80%;
+  max-width: 600px;
+  padding: 10px 15px;
+  font-size: 18px;
+  border-radius: 25px;
+  border: 2px solid #1a1a1a; /* Darker border for contrast */
+  background-color: #fff; /* White background for better contrast */
+  color: #333; /* Dark text for readability */
+  -webkit-box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease; /* Smooth transition for focus state */
+  font-weight: 400; /* Regular weight for input text */
+  font-family: "Quicksand", sans-serif; /* Ensuring Quicksand font is applied */
+}
+
+/* Focus State Styling for Search Bar */
+.search-bar:focus {
+  outline: none;
+  border-color: #007bff; /* Blue border on focus */
+  -webkit-box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.2);
+          box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.2); /* Enhanced shadow on focus */
+}
+
+/* Placeholder Text Styling for Search Bar */
+.search-bar::-webkit-input-placeholder {
+  color: #aaa; /* Light gray placeholder */
+  font-weight: 300; /* Light weight for placeholder text */
+}
+.search-bar::-moz-placeholder {
+  color: #aaa; /* Light gray placeholder */
+  font-weight: 300; /* Light weight for placeholder text */
+}
+.search-bar:-ms-input-placeholder {
+  color: #aaa; /* Light gray placeholder */
+  font-weight: 300; /* Light weight for placeholder text */
+}
+.search-bar::-ms-input-placeholder {
+  color: #aaa; /* Light gray placeholder */
+  font-weight: 300; /* Light weight for placeholder text */
+}
+.search-bar::placeholder {
+  color: #aaa; /* Light gray placeholder */
+  font-weight: 300; /* Light weight for placeholder text */
+}
+
+/* Search Bar Clear Button Styling */
+.search-bar-clear {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
+}
+
+.search-bar-clear:hover {
+  color: #333; /* Darker color on hover */
+}
+
+.card {
+  padding: 3em;
+  font-weight: 400; /* Using medium weight for regular text in cards */
+}/*# sourceMappingURL=App.css.map */

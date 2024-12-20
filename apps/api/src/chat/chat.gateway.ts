@@ -29,7 +29,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly chatService: ChatService,
     private readonly roomsService: RoomsService,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ) {}
 
   async handleConnection(client: Socket) {
@@ -64,7 +64,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (client.data.userRole === 'employer') {
         // Employers join a shared 'employers' room
         client.join('employers');
-        this.logger.log(`Employer ${client.data.userId} joined 'employers' room.`);
+        this.logger.log(
+          `Employer ${client.data.userId} joined 'employers' room.`
+        );
 
         // Immediately send the list of currently online freelancers to this employer
         this.server.to(client.id).emit('onlineUsers', {
@@ -78,10 +80,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         // Notify all employers that this freelancer is online
         this.server.to('employers').emit('userOnline', { userId: payload.sub });
-        this.logger.log(`Freelancer ${payload.sub} connected and is now online.`);
+        this.logger.log(
+          `Freelancer ${payload.sub} connected and is now online.`
+        );
       }
 
-      this.logger.log(`User ${payload.sub} connected with role ${payload.role}`);
+      this.logger.log(
+        `User ${payload.sub} connected with role ${payload.role}`
+      );
     } catch (err) {
       this.logger.error('Token verification failed:', err.message);
       client.disconnect();
@@ -108,7 +114,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleSendMessage(
     @MessageBody()
     message: { id: string; senderId: string; receiverId: string; text: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ) {
     try {
       const sender = await this.chatService.getUserById(message.senderId);
@@ -118,13 +124,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         (sender.role === 'freelancer' && receiver.role === 'employer') ||
         (sender.role === 'employer' && receiver.role === 'freelancer')
       ) {
-        let room = await this.chatService.findRoomBetweenUsers(sender, receiver);
+        let room = await this.chatService.findRoomBetweenUsers(
+          sender,
+          receiver
+        );
 
         if (!room) {
           room = await this.roomsService.createRoom(
             sender.id,
             receiver.id,
-            `${sender.username}-${receiver.username}`,
+            `${sender.username}-${receiver.username}`
           );
         }
 
@@ -132,17 +141,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           sender,
           receiver,
           message.text,
-          message.id,
+          message.id
         );
 
-        this.server.to([message.senderId, message.receiverId]).emit('receiveMessage', {
-          id: savedMessage.id,
-          senderId: savedMessage.sender.id,
-          receiverId: savedMessage.receiver.id,
-          text: savedMessage.message,
-          timestamp: savedMessage.createdAt,
-          isRead: savedMessage.isRead,
-        });
+        this.server
+          .to([message.senderId, message.receiverId])
+          .emit('receiveMessage', {
+            id: savedMessage.id,
+            senderId: savedMessage.sender.id,
+            receiverId: savedMessage.receiver.id,
+            text: savedMessage.message,
+            timestamp: savedMessage.createdAt,
+            isRead: savedMessage.isRead,
+          });
 
         this.server.to(message.senderId).emit('messageDelivered', {
           id: savedMessage.id,
@@ -157,14 +168,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     @MessageBody() data: { roomId: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ) {
     try {
       // Join the client to the specified room
       client.join(data.roomId);
-      this.logger.log(
-        `User ${client.data.userId} joined room ${data.roomId}`,
-      );
+      this.logger.log(`User ${client.data.userId} joined room ${data.roomId}`);
     } catch (error) {
       this.logger.error('Error joining room:', error.message);
     }
@@ -173,18 +182,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('markAsRead')
   async handleMarkAsRead(
     @MessageBody() data: { senderId: string; receiverId: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ) {
     const { senderId, receiverId } = data;
-    this.logger.log(`markAsRead event received - senderId: ${senderId}, receiverId: ${receiverId}`);
-  
+    this.logger.log(
+      `markAsRead event received - senderId: ${senderId}, receiverId: ${receiverId}`
+    );
+
     try {
       await this.chatService.markMessagesAsRead(senderId, receiverId);
       this.server.to(senderId).emit('messagesRead', { senderId, receiverId });
-      this.logger.log(`Messages from ${senderId} to ${receiverId} marked as read`);
+      this.logger.log(
+        `Messages from ${senderId} to ${receiverId} marked as read`
+      );
     } catch (error) {
       this.logger.error('Error marking messages as read:', error);
     }
   }
-  
 }

@@ -127,11 +127,15 @@ export class ChatService {
     senderId: string,
     receiverId: string
   ): Promise<void> {
-    await this.chatRepository.update(
-      { sender: { id: senderId }, receiver: { id: receiverId }, isRead: false },
-      { isRead: true }
-    );
+    await this.chatRepository.createQueryBuilder()
+      .update(ChatMessage)
+      .set({ isRead: true })
+      .where("senderId = :senderId", { senderId })
+      .andWhere("receiverId = :receiverId", { receiverId })
+      .andWhere("isRead = false")
+      .execute();
   }
+  
 
   // Get unread message counts per sender
   async getUnreadCounts(userId: string): Promise<{ [key: string]: number }> {
