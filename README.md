@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-Welcome to **MindsMesh** — an innovative online platform designed for creatives (slightly hipsters 🧑‍🎨), tech enthusiasts 💻, and developers 👩‍💻 to offer their skills and get in touch with employers. The platform features user authentication, profile management, skill offerings and a live chat system for seamless communication between employers and freelancers.  
+Welcome to **MindsMesh** — an innovative online platform designed for creatives, tech enthusiasts 💻, and developers 👩‍💻 to offer their skills and get in touch with employers. The platform features user authentication, profile management, skill offerings and a live chat system for seamless communication between employers and freelancers.  
 
 <!-- a booking system, and a review system. Additionally, it includes an admin dashboard for managing users, skills, and bookings, providing a seamless experience for both users and administrators. -->
 
