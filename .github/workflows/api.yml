@@ -1,0 +1,121 @@
+name: API CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'apps/api/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/api.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'apps/api/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  api-lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.6.12'
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint API
+        run: pnpm --filter api lint
+
+      - name: Test API
+        run: pnpm --filter api test
+        env:
+          NODE_ENV: test
+
+  api-build:
+    needs: api-lint-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.6.12'
+          run_install: false
+
+      - name: Restore pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build API
+        run: pnpm --filter api build
+
+      - name: Upload API build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-build
+          path: apps/api/dist/
+          retention-days: 7
+
+  # Uncomment and configure for deployment when ready
+  # api-deploy:
+  #   needs: api-build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: api-build
+  #         path: apps/api/dist/
+  #
+  #     # Add your deployment steps here
+  #     # For example, deployment to a cloud provider like AWS, Azure, or GCP
+  #     # - name: Deploy to production
+  #     #   uses: some-deployment-action@v1
+  #     #   with:
+  #     #     api_token: ${{ secrets.DEPLOYMENT_TOKEN }}
