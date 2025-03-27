@@ -113,7 +113,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @MessageBody()
-    message: { id: string; senderId: string; receiverId: string; text: string },
+    message: { 
+      id: string; 
+      senderId: string; 
+      receiverId: string; 
+      text: string;
+      fileUrl?: string;
+      fileName?: string;
+      fileType?: string;
+    },
     @ConnectedSocket() client: Socket
   ) {
     try {
@@ -141,7 +149,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           sender,
           receiver,
           message.text,
-          message.id
+          message.id,
+          message.fileUrl,
+          message.fileName,
+          message.fileType
         );
 
         this.server
@@ -153,6 +164,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             text: savedMessage.message,
             timestamp: savedMessage.createdAt,
             isRead: savedMessage.isRead,
+            fileUrl: savedMessage.fileUrl,
+            fileName: savedMessage.fileName,
+            fileType: savedMessage.fileType
           });
 
         this.server.to(message.senderId).emit('messageDelivered', {

@@ -10,6 +10,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Room } from './entities/room.entity'; 
 import { ChatMessage } from './entities/chat-message.entity';
 import { RoomsModule } from './rooms.module';
+import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { RoomsModule } from './rooms.module';
     UsersModule,
     AuthModule,
     RoomsModule,
+    CloudinaryModule, // Add CloudinaryModule here
+    MulterModule.register(), // Register MulterModule for file uploads
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

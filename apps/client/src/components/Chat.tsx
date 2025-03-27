@@ -5,7 +5,7 @@ import { User } from "../types/types";
 import { Button } from "./shadcn/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "./shadcn/ui/card";
 import { Input } from "./shadcn/ui/input";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, X, Image, FileText, File } from "lucide-react";
 import { format } from "date-fns";
 import { getChatMessages, createRoom } from "../services/MindsMeshAPI";
 import { v4 as uuidv4 } from "uuid";
@@ -20,7 +20,10 @@ interface Message {
   text: string;
   timestamp: Date;
   status?: "sending" | "sent" | "error";
-  isRead?: boolean; // Add this property
+  isRead?: boolean;
+  fileUrl?: string;
+  fileName?: string;
+  fileType?: string;
 }
 
 interface MessagesReadPayload {
@@ -39,7 +42,10 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   const [newMessage, setNewMessage] = useState("");
   const [isConnecting, setIsConnecting] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { socket } = useContext(SocketContext); // Access socket from context
@@ -113,6 +119,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
     if (senderId && chatPartner?.id && socket) { // Ensure socket is available
       try {
         const response = await getChatMessages(senderId, chatPartner.id);
+        console.log("Chat history response:", response); // Debug log
         setMessages(
           response.map((msg: any) => ({
             id: msg.id,
@@ -121,7 +128,10 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
             text: msg.message,
             timestamp: new Date(msg.createdAt),
             status: "sent",
-            isRead: msg.isRead, // Include isRead status
+            isRead: msg.isRead,
+            fileUrl: msg.fileUrl,
+            fileName: msg.fileName,
+            fileType: msg.fileType,
           }))
         );
 
@@ -144,7 +154,9 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
 
   useEffect(() => {
     if (socket && senderId && chatPartner) {
-      const handleReceiveMessage = (message: Message) => {
+      const handleReceiveMessage = (message: any) => {
+        console.log("Received message:", message); // Debug log
+        
         if (
           (message.senderId === chatPartner.id && message.receiverId === senderId) ||
           (message.senderId === senderId && message.receiverId === chatPartner.id)
@@ -207,27 +219,110 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
     }
   }, [messages, isConnecting]);
 
-  const handleSendMessage = async () => {
-    if (!senderId || !newMessage.trim() || !chatPartner || !socket) return;
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
 
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadFile = async (file: File): Promise<{ url: string, fileName: string, fileType: string } | null> => {
+    if (!chatPartner || !senderId) {
+      return null;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('text', newMessage);
+    formData.append('messageId', uuidv4());
+
+    try {
+      setIsUploading(true);
+      const response = await fetch(`/api/chat/${chatPartner.id}/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("File upload response:", data); // Debug log
+      return {
+        url: data.fileUrl,
+        fileName: data.fileName,
+        fileType: data.fileType,
+      };
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!senderId || (!newMessage.trim() && !selectedFile) || !chatPartner || !socket) return;
+
+    const messageId = uuidv4();
+    let fileInfo = null;
+
+    // Create base message object
     const messageObj: Message = {
-      id: uuidv4(),
+      id: messageId,
       senderId,
       receiverId: chatPartner.id,
-      text: newMessage.trim(),
+      text: newMessage.trim() || (selectedFile ? `Sent a file: ${selectedFile.name}` : ''),
       timestamp: new Date(),
       status: "sending",
-      isRead: false, // Initialize as unread
+      isRead: false,
     };
 
+    // Add to messages immediately for UI feedback
     setMessages((prev) => [...prev, messageObj]);
     setNewMessage("");
 
+    // If there's a file, upload it first
+    if (selectedFile) {
+      fileInfo = await uploadFile(selectedFile);
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      if (fileInfo) {
+        // Update message with file info
+        messageObj.fileUrl = fileInfo.url;
+        messageObj.fileName = fileInfo.fileName;
+        messageObj.fileType = fileInfo.fileType;
+      }
+    }
+
     try {
+      // Send message through socket
+      console.log("Sending message:", messageObj); // Debug log
       socket.emit("sendMessage", messageObj);
+      
+      // Update local message status
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === messageObj.id ? { ...msg, status: "sent" } : msg
+          msg.id === messageObj.id ? { 
+            ...msg, 
+            status: "sent",
+            fileUrl: messageObj.fileUrl,
+            fileName: messageObj.fileName,
+            fileType: messageObj.fileType
+          } : msg
         )
       );
     } catch (error) {
@@ -260,13 +355,68 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
     });
   };
 
+  const renderFilePreview = (message: Message) => {
+    if (!message.fileUrl) return null;
+    
+    console.log("Rendering file preview:", message.fileUrl, message.fileType, message.fileName); // Debug log
+
+    // Ensure we have the file name with extension
+    const fileName = message.fileName || 'file';
+    
+    const isImage = message.fileType?.startsWith('image/');
+    const isPdf = message.fileType === 'application/pdf';
+    const isText = message.fileType?.startsWith('text/');
+    
+    // Helper function to get appropriate file icon
+    const getFileIcon = () => {
+      if (isPdf) return <FileText size={16} className="mr-2" />;
+      if (isText) return <FileText size={16} className="mr-2" />;
+      return <File size={16} className="mr-2" />;
+    };
+
+    return (
+      <div className="mt-2 max-w-full">
+        {isImage ? (
+          <a 
+            href={message.fileUrl} 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+            download={fileName}
+          >
+            <img 
+              src={message.fileUrl} 
+              alt={fileName || 'Attached image'} 
+              className="max-w-full max-h-48 rounded-lg object-contain"
+            />
+            <span className="text-xs mt-1 flex items-center">
+              <Image size={12} className="mr-1" />
+              {fileName}
+            </span>
+          </a>
+        ) : (
+          <a 
+            href={message.fileUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            download={fileName}
+          >
+            {getFileIcon()}
+            <span className="text-sm truncate">{fileName}</span>
+          </a>
+        )}
+      </div>
+    );
+  };
+
   const renderMessageStatus = (message: Message) => {
     if (message.senderId !== senderId) return null;
 
     if (message.isRead) {
-      return <span className="text-xs text-blue-400">✓✓</span>; // Read
+      return <span className="text-xs text-blue-400">READ</span>; // Read
     } else {
-      return <span className="text-xs text-gray-400">✓</span>; // Delivered
+      return <span className="text-xs text-gray-400">UNREAD</span>; // Delivered
     }
   };
 
@@ -359,6 +509,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
                           }`}
                         >
                           {renderMessageContent(msg.text)}
+                          {msg.fileUrl && renderFilePreview(msg)}
                         </div>
                         <div
                           className={`flex items-center space-x-2 ${
@@ -383,11 +534,31 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
 
       {chatPartner && (
         <CardFooter className="p-4 bg-white border-t">
+          {selectedFile && (
+            <div className="flex items-center bg-gray-100 p-2 mb-2 rounded-md w-full">
+              <div className="flex-1 truncate text-sm">{selectedFile.name}</div>
+              <button 
+                onClick={handleRemoveFile} 
+                className="ml-2 text-gray-500 hover:text-gray-700"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
           <div className="flex w-full items-end space-x-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="image/*,application/pdf,text/*,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            />
             <Button
               variant="ghost"
               size="icon"
               className="rounded-full text-gray-500 hover:text-gray-600"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isConnecting || isUploading}
             >
               <PaperClipIcon className="h-5 w-5" />
             </Button>
@@ -406,16 +577,20 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
                 }}
                 placeholder="Type a message..."
                 className="rounded-full bg-gray-100 border-0 focus:ring-2 focus:ring-blue-500"
-                disabled={isConnecting}
+                disabled={isConnecting || isUploading}
               />
             </div>
             <Button
               onClick={handleSendMessage}
-              disabled={!newMessage.trim() || isConnecting}
+              disabled={(!newMessage.trim() && !selectedFile) || isConnecting || isUploading}
               size="icon"
               className="rounded-full bg-blue-600 hover:bg-blue-700"
             >
-              <Send className="h-4 w-4" />
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </CardFooter>

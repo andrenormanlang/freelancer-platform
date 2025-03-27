@@ -9,16 +9,23 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '@/auth/jwt.auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { SendMessageDto } from './dto/send-message.dto';
 
 @Controller('chat')
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
+    private readonly cloudinaryService: CloudinaryService
   ) {}
 
   @Post(':receiverId/send')
@@ -27,10 +34,13 @@ export class ChatController {
     @Request() req,
     @Param('receiverId') receiverId: string,
     @Body('text') text: string,
-    @Body('messageId') messageId: string
+    @Body('messageId') messageId: string,
+    @Body('fileUrl') fileUrl?: string,
+    @Body('fileName') fileName?: string,
+    @Body('fileType') fileType?: string
   ) {
-    if (!text.trim()) {
-      throw new BadRequestException('Message cannot be empty');
+    if (!text.trim() && !fileUrl) {
+      throw new BadRequestException('Message cannot be empty and no file attached');
     }
 
     console.log('Request user:', req.user); // Log the user object to debug
@@ -54,11 +64,74 @@ export class ChatController {
         sender,
         receiver,
         text,
-        messageId
+        messageId,
+        fileUrl,
+        fileName,
+        fileType
       );
     } catch (error) {
       console.error('Error sending message:', error.message);
       throw error;
+    }
+  }
+
+  @Post(':receiverId/upload')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+        text: {
+          type: 'string',
+        },
+        messageId: {
+          type: 'string',
+        },
+      },
+    },
+  })
+  async uploadFile(
+    @Request() req,
+    @Param('receiverId') receiverId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('text') text: string = '',
+    @Body('messageId') messageId: string
+  ) {
+    try {
+      // Upload file to Cloudinary
+      const uploadResult = await this.cloudinaryService.uploadFile(file);
+      console.log('File uploaded to Cloudinary:', uploadResult);
+
+      const sender = await this.userService.getAuthenticatedUser(req.user.id);
+      const receiver = await this.userService.findById(receiverId);
+
+      if (!sender) {
+        throw new NotFoundException(`Sender with ID ${req.user.id} not found`);
+      }
+
+      if (!receiver) {
+        throw new NotFoundException(`Receiver with ID ${receiverId} not found`);
+      }
+
+      // Create message with file details
+      return await this.chatService.sendMessageWithId(
+        sender,
+        receiver,
+        text || `Sent a file: ${file.originalname}`, // Include full filename with extension in message
+        messageId,
+        uploadResult.secure_url,
+        file.originalname, // Use full original filename with extension
+        file.mimetype
+      );
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw new BadRequestException(`File upload failed: ${error.message}`);
     }
   }
 
@@ -99,12 +172,12 @@ export class ChatController {
 
   // Endpoint to get unread counts
   @UseGuards(JwtAuthGuard)
-@Get('unread-counts')
-async getUnreadCounts(@Request() req) {
-  const userId = req.user.sub;
-  console.log(`API called by userId: ${userId}`);
-  return await this.chatService.getUnreadCounts(userId);
-}
+  @Get('unread-counts')
+  async getUnreadCounts(@Request() req) {
+    const userId = req.user.sub;
+    console.log(`API called by userId: ${userId}`);
+    return await this.chatService.getUnreadCounts(userId);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('active-chats')

@@ -22,6 +22,30 @@ export class ChatMessage {
   message!: string;
 
   @ApiProperty({
+    example: 'https://res.cloudinary.com/example/image.jpg',
+    description: 'The URL of the attached file',
+    required: false,
+  })
+  @Column({ nullable: true })
+  fileUrl?: string;
+
+  @ApiProperty({
+    example: 'image.jpg',
+    description: 'The original name of the attached file',
+    required: false,
+  })
+  @Column({ nullable: true })
+  fileName?: string;
+
+  @ApiProperty({
+    example: 'image/jpeg',
+    description: 'The MIME type of the attached file',
+    required: false,
+  })
+  @Column({ nullable: true })
+  fileType?: string;
+
+  @ApiProperty({
     example: 'uuid-1234',
     description: 'The ID of the user who sent the message',
   })

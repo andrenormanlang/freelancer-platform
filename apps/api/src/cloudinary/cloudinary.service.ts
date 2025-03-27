@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary } from 'cloudinary';
 import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 
+type CloudinaryResourceType = 'image' | 'video' | 'raw' | 'auto';
+
 @Injectable()
 export class CloudinaryService {
   constructor() {
@@ -19,5 +21,50 @@ export class CloudinaryService {
         resolve(result);
       }).end(file.buffer); 
     });
+  }
+
+  async uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    // Determine resource type based on mimetype
+    const resourceType: CloudinaryResourceType = this.getResourceType(file.mimetype);
+    
+    // Extract filename without extension and the extension itself
+    const originalName = file.originalname;
+    const lastDotIndex = originalName.lastIndexOf('.');
+    const fileNameWithoutExt = lastDotIndex !== -1 ? 
+      originalName.substring(0, lastDotIndex) : originalName;
+    const fileExt = lastDotIndex !== -1 ? 
+      originalName.substring(lastDotIndex) : '';
+    
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream({ 
+        resource_type: resourceType,
+        // Add folder for better organization
+        folder: 'chat-attachments',
+        // Preserve original filename with extension for easier user recognition
+        public_id: fileNameWithoutExt,
+        // Use original format to preserve file extension
+        use_filename: true,
+        unique_filename: true,
+        // Add context for more info
+        context: {
+          original_filename: originalName,
+          mime_type: file.mimetype
+        }
+      }, (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }).end(file.buffer);
+    });
+  }
+
+  private getResourceType(mimetype: string): CloudinaryResourceType {
+    if (mimetype.startsWith('image/')) {
+      return 'image';
+    } else if (mimetype.startsWith('video/')) {
+      return 'video';
+    } else {
+      // For documents, PDFs, text files, etc.
+      return 'raw';
+    }
   }
 }

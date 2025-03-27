@@ -33,12 +33,18 @@ export class ChatService {
   async sendMessage(
     sender: User,
     receiver: User,
-    message: string
+    message: string,
+    fileUrl?: string,
+    fileName?: string,
+    fileType?: string
   ): Promise<ChatMessage> {
     const chatMessage = this.chatRepository.create({
       sender,
       receiver,
       message,
+      fileUrl,
+      fileName,
+      fileType,
     });
     const savedMessage = await this.chatRepository.save(chatMessage);
     console.log('Saved message with createdAt:', savedMessage.createdAt);
@@ -54,13 +60,19 @@ export class ChatService {
     sender: User,
     receiver: User,
     message: string,
-    id: string
+    id: string,
+    fileUrl?: string,
+    fileName?: string,
+    fileType?: string
   ): Promise<ChatMessage> {
     const chatMessage = this.chatRepository.create({
       id, // Set the unique ID for the message
       sender,
       receiver,
       message,
+      fileUrl,
+      fileName,
+      fileType,
     });
     const savedMessage = await this.chatRepository.save(chatMessage);
     console.log('Saved message with createdAt:', savedMessage.createdAt);
@@ -104,10 +116,19 @@ export class ChatService {
     return Array.from(chatPartnersMap.values());
   }
 
-  async sendMessageToRoom(room: Room, message: string): Promise<ChatMessage> {
+  async sendMessageToRoom(
+    room: Room, 
+    message: string,
+    fileUrl?: string,
+    fileName?: string,
+    fileType?: string
+  ): Promise<ChatMessage> {
     const chatMessage = this.chatRepository.create({
       message,
       room,
+      fileUrl,
+      fileName,
+      fileType,
     });
     return this.chatRepository.save(chatMessage);
   }
