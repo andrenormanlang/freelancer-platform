@@ -14,12 +14,14 @@ import { SendGridModule } from './sendgrid/sendgrid.module';
 import { ChatGateway } from './chat/chat.gateway';
 import { ChatModule } from './chat/chat.module';
 import { RoomsModule } from './chat/rooms.module';
+import { FirebaseModule } from './firebase/firebase.module';
+import firebaseConfig from './config/firebase.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [typeorm],
+      load: [typeorm, firebaseConfig],
       envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
@@ -45,6 +47,7 @@ import { RoomsModule } from './chat/rooms.module';
     SendGridModule,
     ChatModule,
     RoomsModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [

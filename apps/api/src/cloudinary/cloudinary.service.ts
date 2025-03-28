@@ -45,6 +45,8 @@ export class CloudinaryService {
         // Use original format to preserve file extension
         use_filename: true,
         unique_filename: true,
+        // Flag as attachment for proper download handling
+        attachment: true,
         // Add context for more info
         context: {
           original_filename: originalName,
@@ -52,6 +54,25 @@ export class CloudinaryService {
         }
       }, (error, result) => {
         if (error) return reject(error);
+        
+        // For non-image files, ensure the URL includes the resource_type for proper handling
+        if (resourceType !== 'image' && result) {
+          // Extract the base URL without the /image/ path segment
+          const urlParts = result.secure_url.split('/');
+          const uploadIndex = urlParts.findIndex(part => part === 'upload');
+          
+          if (uploadIndex !== -1) {
+            // Reconstruct URL with proper resource_type
+            urlParts.splice(uploadIndex, 0, resourceType);
+            result.secure_url = urlParts.join('/');
+            
+            // Ensure the URL includes the file extension for proper MIME type handling
+            if (!result.secure_url.endsWith(fileExt) && fileExt) {
+              result.secure_url = `${result.secure_url}${fileExt}`;
+            }
+          }
+        }
+        
         resolve(result);
       }).end(file.buffer);
     });

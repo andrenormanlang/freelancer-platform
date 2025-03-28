@@ -172,7 +172,7 @@ export class UsersService {
     return users;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, skillFiles?: Express.Multer.File[]): Promise<User> {
+  async update(id: string, updateUserDto: UpdateUserDto, skillImageUrls?: Express.Multer.File[]): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['skills'],
@@ -210,9 +210,9 @@ export class UsersService {
     }
 
     // Handle new skill images
-    if (skillFiles && skillFiles.length > 0) {
+    if (skillImageUrls && skillImageUrls.length > 0) {
       const uploadedUrls = await Promise.all(
-        skillFiles.map(file => this.cloudinaryService.uploadImage(file))
+        skillImageUrls.map(file => this.cloudinaryService.uploadFile(file))
       );
 
       // Filter out any failed uploads

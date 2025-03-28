@@ -10,7 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Room } from './entities/room.entity'; 
 import { ChatMessage } from './entities/chat-message.entity';
 import { RoomsModule } from './rooms.module';
-import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
+import { FirebaseModule } from '@/firebase/firebase.module';
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -19,7 +19,7 @@ import { MulterModule } from '@nestjs/platform-express';
     UsersModule,
     AuthModule,
     RoomsModule,
-    CloudinaryModule, // Add CloudinaryModule here
+    FirebaseModule, // Use FirebaseModule instead of CloudinaryModule
     MulterModule.register(), // Register MulterModule for file uploads
     JwtModule.registerAsync({
       imports: [ConfigModule],

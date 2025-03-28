@@ -395,16 +395,25 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
             </span>
           </a>
         ) : (
-          <a 
-            href={message.fileUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            download={fileName}
-          >
-            {getFileIcon()}
-            <span className="text-sm truncate">{fileName}</span>
-          </a>
+          <div className="flex flex-col space-y-2">
+            <a 
+              href={message.fileUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              download={fileName}
+            >
+              {getFileIcon()}
+              <span className="text-sm truncate">{fileName}</span>
+            </a>
+            <a 
+              href={message.fileUrl} 
+              download={fileName}
+              className="text-xs text-blue-600 hover:underline flex items-center"
+            >
+              <span>Download {fileName}</span>
+            </a>
+          </div>
         )}
       </div>
     );

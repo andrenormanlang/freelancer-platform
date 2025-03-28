@@ -27,7 +27,7 @@
   "dependencies": {
     "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.0.0",
-    "@nestjs/config": "^3.2.3",
+    "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.3",
@@ -46,6 +46,7 @@
     "class-validator": "^0.14.1",
     "cloudinary": "^1.41.3",
     "dotenv": "^16.4.5",
+    "firebase": "^11.5.0",
     "lodash": "^4.17.21",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^6.9.15",

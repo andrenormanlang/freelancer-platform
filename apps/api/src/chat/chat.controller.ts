@@ -16,7 +16,7 @@ import { ChatService } from './chat.service';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '@/auth/jwt.auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { FirebaseService } from '../firebase/firebase.service';
 import { ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { SendMessageDto } from './dto/send-message.dto';
 
@@ -25,7 +25,7 @@ export class ChatController {
   constructor(
     private readonly chatService: ChatService,
     private readonly userService: UsersService,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly firebaseService: FirebaseService
   ) {}
 
   @Post(':receiverId/send')
@@ -104,9 +104,9 @@ export class ChatController {
     @Body('messageId') messageId: string
   ) {
     try {
-      // Upload file to Cloudinary
-      const uploadResult = await this.cloudinaryService.uploadFile(file);
-      console.log('File uploaded to Cloudinary:', uploadResult);
+      // Upload file to Firebase instead of Cloudinary
+      const uploadResult = await this.firebaseService.uploadFile(file);
+      console.log('File uploaded to Firebase:', uploadResult);
 
       const sender = await this.userService.getAuthenticatedUser(req.user.id);
       const receiver = await this.userService.findById(receiverId);

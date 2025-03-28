@@ -236,7 +236,7 @@ export class UsersController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'avatar', maxCount: 1 },
-      { name: 'skillFiles', maxCount: 10 }, 
+      { name: 'skillImageUrls', maxCount: 10 }, 
     ])
   )
   @ApiOperation({ summary: 'Update a user by ID' })
@@ -258,14 +258,23 @@ export class UsersController {
     @UploadedFiles()
     files: {
       avatar?: Express.Multer.File[];
-      skillFiles?: Express.Multer.File[];
+      skillImageUrls?: Express.Multer.File[];
     }
   ): Promise<UserResponseDto> {
     // Optional: Log incoming files for debugging
-    console.log('Received skillFiles:', files.skillFiles);
+    console.log('Received skillImageUrls:', files.skillImageUrls);
     console.log('Received avatar:', files.avatar);
 
-    const updatedUser = await this.usersService.update(id, userDto, files.skillFiles);
+    if (files.skillImageUrls && files.skillImageUrls.length > 0) {
+      console.log('Received skillImageUrls:', files.skillImageUrls);
+      // Use uploadFile instead of uploadImage to preserve file extensions
+      const uploadResults = await Promise.all(
+        files.skillImageUrls.map((file) => this.cloudinaryService.uploadFile(file))
+      );
+      userDto.skillImageUrls = uploadResults.map((result) => result.secure_url);
+    }
+
+    const updatedUser = await this.usersService.update(id, userDto, files.skillImageUrls);
     return plainToClass(UserResponseDto, updatedUser);
   }
 
