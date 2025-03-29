@@ -10,7 +10,7 @@ Each feature of this project represents both a functional solution and a learnin
 
 🧙‍♂️👨‍💻 **At the moment I am implementing the following:**
 
-*** - AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements.***
+👥🔍  **AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements.**
 
 <!-- a booking system, and a review system. Additionally, it includes an admin dashboard for managing users, skills, and bookings, providing a seamless experience for both users and administrators. -->
 
