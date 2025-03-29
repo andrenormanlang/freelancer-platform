@@ -49,6 +49,11 @@ Welcome to **MindsMesh** — an innovative online platform designed for creative
 - **Message Status Indicators** ✔️: See when your messages are sending, sent, or if there was an error
 - **Connection Status** 🔌: Visual indicators show if you are connected or reconnecting
 
+#### 📎New Chat Attachment feature:
+
+- **Send and Receive Attachments** : Share files, images, and documents with ease
+- **Multiple File Types** 🖼️ 📄 📝- Share images, PDFs, Word documents, and text **(files Maximum file size: 10MB)**
+- ***Seamless Experience*** - Files are stored securely in 🔥🔥Firebase Storage 🔥🔥  and accessible across devices
 <!-- ### 📅 Booking System
 
 - **Book Lessons:** Users can book lessons from available skill offerings.
@@ -79,6 +84,9 @@ Welcome to **MindsMesh** — an innovative online platform designed for creative
 - **Passport.js:** Middleware for authentication in Node.js applications, supporting various authentication strategies, with a focus on JWT for secure API access.
 - **Swagger:** A tool for documenting  API, enabling easy visualization and interaction with API endpoints directly from a browser.
 - **Socket.IO :** A library for real-time, bidirectional, and event-based communication, making it ideal for applications that require live updates, such as chat apps.
+- **Cloudinary:** A cloud-based image and video management service uploading users avatar images and skill images.
+- **SendGrid:** A cloud-based email delivery service for confirming user registrations, sending password reset emails.
+- **Firebase Storage:** A cloud storage solution for image and document attachments in the chat system.
 
 ### 🎨 Frontend (React 19 RC / OBS: React 18 for the moment)
 
