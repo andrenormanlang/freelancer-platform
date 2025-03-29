@@ -2,7 +2,15 @@
 
 ## 🚀 Overview
 
-Welcome to **MindsMesh** — an innovative online platform designed for creatives, tech enthusiasts 💻, and developers 👩‍💻 to offer their skills and get in touch with employers. The platform features user authentication, profile management, skill offerings and a live chat system for seamless communication between employers and freelancers.  
+Welcome to MindsMesh — my ever-evolving personal project 🚀 where passion meets continuous learning! This innovative platform connects creatives, tech enthusiasts 💻, and developers 👩‍💻 with potential employers.
+
+Built with React, NestJS, TypeScript, and modern cloud services, MindsMesh showcases my commitment to professional-grade development practices and architectural design. The platform features secure user authentication, dynamic profile management, skill showcasing, and a real-time chat system with file sharing capabilities.
+
+Each feature of this project represents both a functional solution and a learning milestone in my development journey 🌱.
+
+🧙‍♂️👨‍💻 **At the moment I am implementing the following:**
+
+*** - AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements.***
 
 <!-- a booking system, and a review system. Additionally, it includes an admin dashboard for managing users, skills, and bookings, providing a seamless experience for both users and administrators. -->
 
@@ -88,11 +96,9 @@ Welcome to **MindsMesh** — an innovative online platform designed for creative
 - **SendGrid:** A cloud-based email delivery service for confirming user registrations, sending password reset emails.
 - **Firebase Storage:** A cloud storage solution for image and document attachments in the chat system.
 
-### 🎨 Frontend (React 19 RC / OBS: React 18 for the moment)
+### 🎨 Frontend 
 
-**🧙‍♂️👨‍💻 Upon it´s release I will be migrating this project to use React 19!**  
-
-- **React 19 :** The latest upcoming version of the most popular front-end library, React, introducing several new features and improvements for building user interfaces. Some anticipated features include:
+- **React 19 :** The latest  version of the most popular front-end library, React, introducing several new features and improvements for building user interfaces. Some of the new features include:
   - ***Server Components:*** Enhances server-side rendering by allowing you to build components that run exclusively on the server, reducing the need for client-side JavaScript.
   - ***Concurrent Rendering Improvements:*** Better handling of asynchronous tasks, making UIs more responsive by allowing React to interrupt rendering and continue later when needed.
   - ***Simplified State Management:*** Improvements in the way React handles state, making it more intuitive and reducing the complexity of managing state across components.
@@ -102,7 +108,7 @@ Welcome to **MindsMesh** — an innovative online platform designed for creative
 ### 🗄️ Database
 
 - **PostgreSQL:** Relational database management.
-- **Redis (Optional):** Caching and session management.
+
 
 <!-- ### Main Features
 
