@@ -11,9 +11,7 @@ import { getChatMessages, createRoom } from "../services/MindsMeshAPI";
 import { v4 as uuidv4 } from "uuid";
 import { PaperClipIcon } from "@heroicons/react/20/solid";
 import { SocketContext } from "../contexts/SocketContext";
-import { uploadFile as apiUploadFile } from '../services/MindsMeshAPI';
-
-
+import { uploadFile as apiUploadFile } from "../services/MindsMeshAPI";
 
 interface Message {
   id: string;
@@ -36,6 +34,7 @@ interface MessagesReadPayload {
 const formatTime = (date: Date) => {
   return format(new Date(date), "HH:mm");
 };
+
 
 const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   chatPartner,
@@ -118,7 +117,8 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   }, []);
 
   const loadChatHistory = async () => {
-    if (senderId && chatPartner?.id && socket) { // Ensure socket is available
+    if (senderId && chatPartner?.id && socket) {
+      // Ensure socket is available
       try {
         const response = await getChatMessages(senderId, chatPartner.id);
         console.log("Chat history response:", response); // Debug log
@@ -138,7 +138,10 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
         );
 
         // After loading messages, emit 'markAsRead' to mark all as read
-        socket.emit("markAsRead", { senderId: chatPartner.id, receiverId: senderId });
+        socket.emit("markAsRead", {
+          senderId: chatPartner.id,
+          receiverId: senderId,
+        });
       } catch (error) {
         console.error("Error loading chat history:", error);
       }
@@ -150,7 +153,10 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   // Emit markAsRead when chat is opened and active
   useEffect(() => {
     if (isActive && socket && senderId && chatPartner) {
-      socket.emit("markAsRead", { senderId: chatPartner.id, receiverId: senderId });
+      socket.emit("markAsRead", {
+        senderId: chatPartner.id,
+        receiverId: senderId,
+      });
     }
   }, [isActive, socket, senderId, chatPartner]);
 
@@ -158,13 +164,17 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
     if (socket && senderId && chatPartner) {
       const handleReceiveMessage = (message: any) => {
         console.log("Received message:", message); // Debug log
-        
+
         if (
-          (message.senderId === chatPartner.id && message.receiverId === senderId) ||
-          (message.senderId === senderId && message.receiverId === chatPartner.id)
+          (message.senderId === chatPartner.id &&
+            message.receiverId === senderId) ||
+          (message.senderId === senderId &&
+            message.receiverId === chatPartner.id)
         ) {
           setMessages((prev) => {
-            const existingMessageIndex = prev.findIndex((msg) => msg.id === message.id);
+            const existingMessageIndex = prev.findIndex(
+              (msg) => msg.id === message.id
+            );
             if (existingMessageIndex !== -1) {
               const updatedMessages = [...prev];
               updatedMessages[existingMessageIndex] = {
@@ -187,7 +197,10 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
 
           // Emit 'markAsRead' if the chat is active
           if (isActive && chatPartner && message.senderId === chatPartner.id) {
-            socket.emit("markAsRead", { senderId: message.senderId, receiverId: senderId });
+            socket.emit("markAsRead", {
+              senderId: message.senderId,
+              receiverId: senderId,
+            });
           }
         }
       };
@@ -230,24 +243,26 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   const handleRemoveFile = () => {
     setSelectedFile(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
-  const uploadFile = async (file: File): Promise<{ url: string, fileName: string, fileType: string } | null> => {
+  const uploadFile = async (
+    file: File
+  ): Promise<{ url: string; fileName: string; fileType: string } | null> => {
     if (!chatPartner || !senderId) {
       return null;
     }
-  
+
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('text', newMessage);
-    formData.append('messageId', uuidv4());
-  
+    formData.append("file", file);
+    formData.append("text", newMessage);
+    formData.append("messageId", uuidv4());
+
     try {
       setIsUploading(true);
       const data = await apiUploadFile(chatPartner.id, formData);
-      
+
       console.log("File upload response:", data);
       return {
         url: data.fileUrl,
@@ -255,7 +270,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
         fileType: data.fileType,
       };
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error("Error uploading file:", error);
       return null;
     } finally {
       setIsUploading(false);
@@ -263,7 +278,13 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   };
 
   const handleSendMessage = async () => {
-    if (!senderId || (!newMessage.trim() && !selectedFile) || !chatPartner || !socket) return;
+    if (
+      !senderId ||
+      (!newMessage.trim() && !selectedFile) ||
+      !chatPartner ||
+      !socket
+    )
+      return;
 
     const messageId = uuidv4();
     let fileInfo = null;
@@ -273,7 +294,9 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       id: messageId,
       senderId,
       receiverId: chatPartner.id,
-      text: newMessage.trim() || (selectedFile ? `Sent a file: ${selectedFile.name}` : ''),
+      text:
+        newMessage.trim() ||
+        (selectedFile ? `Sent a file: ${selectedFile.name}` : ""),
       timestamp: new Date(),
       status: "sending",
       isRead: false,
@@ -288,7 +311,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       fileInfo = await uploadFile(selectedFile);
       setSelectedFile(null);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
 
       if (fileInfo) {
@@ -303,17 +326,19 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       // Send message through socket
       console.log("Sending message:", messageObj); // Debug log
       socket.emit("sendMessage", messageObj);
-      
+
       // Update local message status
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === messageObj.id ? { 
-            ...msg, 
-            status: "sent",
-            fileUrl: messageObj.fileUrl,
-            fileName: messageObj.fileName,
-            fileType: messageObj.fileType
-          } : msg
+          msg.id === messageObj.id
+            ? {
+                ...msg,
+                status: "sent",
+                fileUrl: messageObj.fileUrl,
+                fileName: messageObj.fileName,
+                fileType: messageObj.fileType,
+              }
+            : msg
         )
       );
     } catch (error) {
@@ -348,16 +373,21 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
 
   const renderFilePreview = (message: Message) => {
     if (!message.fileUrl) return null;
-    
-    console.log("Rendering file preview:", message.fileUrl, message.fileType, message.fileName); // Debug log
+
+    console.log(
+      "Rendering file preview:",
+      message.fileUrl,
+      message.fileType,
+      message.fileName
+    ); // Debug log
 
     // Ensure we have the file name with extension
-    const fileName = message.fileName || 'file';
-    
-    const isImage = message.fileType?.startsWith('image/');
-    const isPdf = message.fileType === 'application/pdf';
-    const isText = message.fileType?.startsWith('text/');
-    
+    const fileName = message.fileName || "file";
+
+    const isImage = message.fileType?.startsWith("image/");
+    const isPdf = message.fileType === "application/pdf";
+    const isText = message.fileType?.startsWith("text/");
+
     // Helper function to get appropriate file icon
     const getFileIcon = () => {
       if (isPdf) return <FileText size={16} className="mr-2" />;
@@ -368,16 +398,16 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
     return (
       <div className="mt-2 max-w-full">
         {isImage ? (
-          <a 
-            href={message.fileUrl} 
+          <a
+            href={message.fileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="block"
             download={fileName}
           >
-            <img 
-              src={message.fileUrl} 
-              alt={fileName || 'Attached image'} 
+            <img
+              src={message.fileUrl}
+              alt={fileName || "Attached image"}
               className="max-w-full max-h-48 rounded-lg object-contain"
             />
             <span className="text-xs mt-1 flex items-center">
@@ -387,9 +417,9 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
           </a>
         ) : (
           <div className="flex flex-col space-y-2">
-            <a 
-              href={message.fileUrl} 
-              target="_blank" 
+            <a
+              href={message.fileUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               download={fileName}
@@ -397,8 +427,8 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
               {getFileIcon()}
               <span className="text-sm truncate">{fileName}</span>
             </a>
-            <a 
-              href={message.fileUrl} 
+            <a
+              href={message.fileUrl}
               download={fileName}
               className="text-xs text-blue-600 hover:underline flex items-center"
             >
@@ -456,16 +486,18 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
                 />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">{chatPartner.username}</h3>
-                {isTyping && (
-                  <p className="text-sm text-gray-500">typing...</p>
-                )}
+                <h3 className="font-semibold text-gray-900">
+                  {chatPartner.username}
+                </h3>
+                {isTyping && <p className="text-sm text-gray-500">typing...</p>}
               </div>
             </div>
           </div>
         ) : (
           <div className="flex-1 text-center">
-            <h3 className="font-semibold text-gray-900">Select a Conversation</h3>
+            <h3 className="font-semibold text-gray-900">
+              Select a Conversation
+            </h3>
           </div>
         )}
       </CardHeader>
@@ -479,53 +511,61 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
             </div>
           ) : (
             <div className="space-y-6">
-              {Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
-                <div key={date} className="space-y-4">
-                  <div className="flex justify-center">
-                    <span className="px-3 py-1 text-xs text-gray-500 bg-white rounded-full shadow-sm">
-                      {date}
-                    </span>
-                  </div>
-                  {dateMessages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${
-                        msg.senderId === senderId ? "justify-end" : "justify-start"
-                      } items-end`}
-                    >
-                      {msg.senderId !== senderId && chatPartner?.avatarUrl && (
-                        <img
-                          src={chatPartner.avatarUrl}
-                          alt={`${chatPartner.username}'s avatar`}
-                          className="w-8 h-8 rounded-full object-cover mr-2"
-                        />
-                      )}
-                      <div className="flex flex-col space-y-1 max-w-[75%]">
-                        <div
-                          className={`rounded-2xl px-4 py-2 shadow-sm ${
-                            msg.senderId === senderId
-                              ? "bg-blue-600 text-white rounded-br-none"
-                              : "bg-white text-gray-900 rounded-bl-none"
-                          }`}
-                        >
-                          {renderMessageContent(msg.text)}
-                          {msg.fileUrl && renderFilePreview(msg)}
-                        </div>
-                        <div
-                          className={`flex items-center space-x-2 ${
-                            msg.senderId === senderId ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          <span className="text-xs text-gray-500">
-                            {formatTime(msg.timestamp)}
-                          </span>
-                          {msg.senderId === senderId && renderMessageStatus(msg)}
+              {Object.entries(groupMessagesByDate(messages)).map(
+                ([date, dateMessages]) => (
+                  <div key={date} className="space-y-4">
+                    <div className="flex justify-center">
+                      <span className="px-3 py-1 text-xs text-gray-500 bg-white rounded-full shadow-sm">
+                        {date}
+                      </span>
+                    </div>
+                    {dateMessages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${
+                          msg.senderId === senderId
+                            ? "justify-end"
+                            : "justify-start"
+                        } items-end`}
+                      >
+                        {msg.senderId !== senderId &&
+                          chatPartner?.avatarUrl && (
+                            <img
+                              src={chatPartner.avatarUrl}
+                              alt={`${chatPartner.username}'s avatar`}
+                              className="w-8 h-8 rounded-full object-cover mr-2"
+                            />
+                          )}
+                        <div className="flex flex-col space-y-1 max-w-[75%]">
+                          <div
+                            className={`rounded-2xl px-4 py-2 shadow-sm ${
+                              msg.senderId === senderId
+                                ? "bg-blue-600 text-white rounded-br-none"
+                                : "bg-white text-gray-900 rounded-bl-none"
+                            }`}
+                          >
+                            {renderMessageContent(msg.text)}
+                            {msg.fileUrl && renderFilePreview(msg)}
+                          </div>
+                          <div
+                            className={`flex items-center space-x-2 ${
+                              msg.senderId === senderId
+                                ? "justify-end"
+                                : "justify-start"
+                            }`}
+                          >
+                            <span className="text-xs text-gray-500">
+                              {formatTime(msg.timestamp)}
+                            </span>
+                            {msg.senderId === senderId &&
+                              renderMessageStatus(msg)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+                    ))}
+                  </div>
+                )
+              )}
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -533,18 +573,43 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       </CardContent>
 
       {chatPartner && (
-        <CardFooter className="p-4 bg-white border-t">
+        <CardFooter className="p-4 bg-white border-t flex flex-col">
           {selectedFile && (
-            <div className="flex items-center bg-gray-100 p-2 mb-2 rounded-md w-full">
-              <div className="flex-1 truncate text-sm">{selectedFile.name}</div>
-              <button 
-                onClick={handleRemoveFile} 
-                className="ml-2 text-gray-500 hover:text-gray-700"
-              >
-                <X size={16} />
-              </button>
+            <div className="w-full px-3 py-2 mb-3 bg-blue-50 border border-blue-100 rounded-lg">
+              <div className="flex items-center">
+                {/* Add file type icon based on mimetype */}
+                {selectedFile.type.startsWith("image/") ? (
+                  <Image size={16} className="text-blue-500 mr-2" />
+                ) : selectedFile.type === "application/pdf" ? (
+                  <FileText size={16} className="text-red-500 mr-2" />
+                ) : (
+                  <File size={16} className="text-gray-500 mr-2" />
+                )}
+
+                {/* Filename with better truncation */}
+                <div
+                  className="flex-1 truncate max-w-[calc(100%-60px)]"
+                  title={selectedFile.name}
+                >
+                  <span className="text-sm font-medium text-gray-700">
+                    {selectedFile.name}
+                  </span>
+                  <span className="text-xs text-gray-500 block">
+                    {(selectedFile.size / 1024).toFixed(0)} KB
+                  </span>
+                </div>
+
+                <button
+                  onClick={handleRemoveFile}
+                  className="ml-2 p-1 rounded-full hover:bg-gray-200 text-gray-500"
+                  title="Remove file"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
           )}
+
           <div className="flex w-full items-end space-x-2">
             <input
               type="file"
@@ -556,13 +621,13 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-gray-500 hover:text-gray-600"
+              className="rounded-full text-gray-500 hover:text-gray-600 flex-shrink-0"
               onClick={() => fileInputRef.current?.click()}
               disabled={isConnecting || isUploading}
             >
               <PaperClipIcon className="h-5 w-5" />
             </Button>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <Input
                 value={newMessage}
                 onChange={(e) => {
@@ -575,16 +640,24 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
                     handleSendMessage();
                   }
                 }}
-                placeholder="Type a message..."
+                placeholder={
+                  selectedFile
+                    ? "Add a message (optional)"
+                    : "Type a message..."
+                }
                 className="rounded-full bg-gray-100 border-0 focus:ring-2 focus:ring-blue-500"
                 disabled={isConnecting || isUploading}
               />
             </div>
             <Button
               onClick={handleSendMessage}
-              disabled={(!newMessage.trim() && !selectedFile) || isConnecting || isUploading}
+              disabled={
+                (!newMessage.trim() && !selectedFile) ||
+                isConnecting ||
+                isUploading
+              }
               size="icon"
-              className="rounded-full bg-blue-600 hover:bg-blue-700"
+              className="rounded-full bg-blue-600 hover:bg-blue-700 flex-shrink-0"
             >
               {isUploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
