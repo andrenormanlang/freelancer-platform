@@ -421,3 +421,20 @@ export const fetchRoomsForFreelancer = async (
     throw error;
   }
 };
+
+export const uploadFile = async (
+  receiverId: string, 
+  formData: FormData
+): Promise<{ fileUrl: string, fileName: string, fileType: string }> => {
+  try {
+    const response = await api.post(`/chat/${receiverId}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    throw error;
+  }
+};

@@ -10,7 +10,9 @@ import { format } from "date-fns";
 import { getChatMessages, createRoom } from "../services/MindsMeshAPI";
 import { v4 as uuidv4 } from "uuid";
 import { PaperClipIcon } from "@heroicons/react/20/solid";
-import { SocketContext } from "../contexts/SocketContext"; 
+import { SocketContext } from "../contexts/SocketContext";
+import { uploadFile as apiUploadFile } from '../services/MindsMeshAPI';
+
 
 
 interface Message {
@@ -236,28 +238,17 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
     if (!chatPartner || !senderId) {
       return null;
     }
-
+  
     const formData = new FormData();
     formData.append('file', file);
     formData.append('text', newMessage);
     formData.append('messageId', uuidv4());
-
+  
     try {
       setIsUploading(true);
-      const response = await fetch(`/api/chat/${chatPartner.id}/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("File upload response:", data); // Debug log
+      const data = await apiUploadFile(chatPartner.id, formData);
+      
+      console.log("File upload response:", data);
       return {
         url: data.fileUrl,
         fileName: data.fileName,
