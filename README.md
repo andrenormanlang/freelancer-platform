@@ -8,14 +8,12 @@ Built with React, NestJS, TypeScript, and modern cloud services, MindsMesh showc
 
 Each feature of this project represents both a functional solution and a learning milestone in my development journey 🌱.
 
-🧙‍♂️👨‍💻 ***At the moment I am implementing the following:***
-
-👥🔍  **AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements.**
+🧙‍♂️👨‍💻 ***At the moment I am implementing an AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements 👥🔍.***
 
 🚢 ***New DevOps Features***
 
 - 🐳**Docker for API Testing:**
-  - Start the Docker Desktop if on Windows or  Docker Engine on Linux.
+  - Start Docker Desktop if on Windows or Docker Engine if on Linux.
   - Execute shell script `docker-api-up.sh` in a wsl terminal.
   - 🧪 Test the endpoints directly in the browser using Swagger accessing <http://localhost:3000/api-docs>.
 
