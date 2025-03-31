@@ -53,7 +53,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package.json first
-COPY apps/api/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
@@ -62,9 +62,9 @@ RUN npm install --legacy-peer-deps
 RUN npm install -g @nestjs/cli@$(node -p "require('./package.json').devDependencies['@nestjs/cli'].replace('^', '')")
 
 # Copy source code
-COPY apps/api/src ./src
-COPY apps/api/tsconfig*.json ./
-COPY apps/api/nest-cli.json ./
+COPY src ./src
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
 
 # Build the application
 RUN npm run build
