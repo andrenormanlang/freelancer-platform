@@ -1,0 +1,7 @@
+services:
+  api:
+    volumes:
+      - ../apps/api:/app/apps/api
+      - /app/apps/api/node_modules
+    environment:
+      - NODE_ENV=development 

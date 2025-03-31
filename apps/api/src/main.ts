@@ -32,10 +32,10 @@ async function bootstrap() {
   });
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('Auth API')
-    .setDescription('API documentation for the Auth module')
+    .setTitle('API Documentation')
+    .setDescription('Your API description')
     .setVersion('1.0')
-    .addBearerAuth() 
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);

@@ -8,9 +8,27 @@ Built with React, NestJS, TypeScript, and modern cloud services, MindsMesh showc
 
 Each feature of this project represents both a functional solution and a learning milestone in my development journey 🌱.
 
-🧙‍♂️👨‍💻 **At the moment I am implementing the following:**
+🧙‍♂️👨‍💻 ***At the moment I am implementing the following:***
 
 👥🔍  **AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements.**
+
+🚢 ***New DevOps Features***
+
+- 🐳**Docker for API Testing:**
+  - Start the Docker Desktop if on Windows or  Docker Engine on Linux.
+  - Execute shell script `docker-api-up.sh` in a wsl terminal.
+  - 🧪 Test the endpoints directly in the browser using Swagger accessing <http://localhost:3000/api-docs>.
+
+- 🔄**GitHub Actions:** CI/CD pipeline.
+  - CI Pipeline: Automatically runs tests and linting on pull requests and pushes to main branch
+  -✅ Build Verification: Ensures the application builds successfully in a clean environment.
+  - Future Implementation: Automated deployment to staging/production environments.
+  
+📎***New Chat Attachment feature:***
+
+- **Send and Receive Attachments** : Share files, images, and documents with ease
+- **Multiple File Types** 🖼️ 📄 📝- Share images, PDFs, Word documents, and text **(files Maximum file size: 10MB)**
+- ***Seamless Experience*** - Files are stored securely in 🔥🔥Firebase Storage 🔥🔥  and accessible across devices
 
 <!-- a booking system, and a review system. Additionally, it includes an admin dashboard for managing users, skills, and bookings, providing a seamless experience for both users and administrators. -->
 
@@ -57,11 +75,6 @@ Each feature of this project represents both a functional solution and a learnin
 - **Message Status Indicators** ✔️: See when your messages are sending, sent, or if there was an error
 - **Connection Status** 🔌: Visual indicators show if you are connected or reconnecting
 
-#### 📎New Chat Attachment feature:
-
-- **Send and Receive Attachments** : Share files, images, and documents with ease
-- **Multiple File Types** 🖼️ 📄 📝- Share images, PDFs, Word documents, and text **(files Maximum file size: 10MB)**
-- ***Seamless Experience*** - Files are stored securely in 🔥🔥Firebase Storage 🔥🔥  and accessible across devices
 <!-- ### 📅 Booking System
 
 - **Book Lessons:** Users can book lessons from available skill offerings.
@@ -114,12 +127,6 @@ Each feature of this project represents both a functional solution and a learnin
 
    **Messaging with Socket.IO** -->
    <!-- **Stripe integration for payments** -->
-
-<!-- ### 🚢 DevOps
-
-- **Docker:** Containerization.
-- **Heroku/DigitalOcean:** Deployment.
-- **GitHub Actions:** CI/CD pipeline. -->
 
 ## 🧑‍💻 Development Steps
 
