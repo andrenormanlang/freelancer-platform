@@ -53,8 +53,9 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy root package.json and the entire apps directory
-COPY package*.json ./
-COPY apps ./apps
+COPY ../package*.json ./
+COPY ../apps ./apps
+
 
 # Set working directory to the API folder
 WORKDIR /app/apps/api
