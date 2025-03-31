@@ -44,6 +44,8 @@
 
 # Dockerfile for Production
 
+# Dockerfile for Production
+
 FROM node:18-alpine AS base
 
 # Create app directory
@@ -53,9 +55,8 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy root package.json and the entire apps directory
-COPY ../package*.json ./
-COPY ../apps ./apps
-
+COPY package*.json ./
+COPY apps ./apps
 
 # Set working directory to the API folder
 WORKDIR /app/apps/api
@@ -68,6 +69,7 @@ RUN npm install -g @nestjs/cli@$(node -p "require('./package.json').devDependenc
 
 # Build the application
 RUN npm run build
+
 
 # Production stage
 FROM node:18-alpine AS production
