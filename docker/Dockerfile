@@ -1,3 +1,4 @@
+# Dockerfile for Local Development
 # FROM node:18-alpine AS base
 
 # # Create app directory
@@ -41,7 +42,7 @@
 
 # CMD ["node", "dist/main.js"] 
 
-# FOR DEPLOYMENT!!
+# Dockerfile for Production
 
 FROM node:18-alpine AS base
 
@@ -52,7 +53,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package.json first
-COPY package*.json ./
+COPY apps/api/package*.json ./
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
@@ -61,9 +62,9 @@ RUN npm install --legacy-peer-deps
 RUN npm install -g @nestjs/cli@$(node -p "require('./package.json').devDependencies['@nestjs/cli'].replace('^', '')")
 
 # Copy source code
-COPY src ./src
-COPY tsconfig*.json ./
-COPY nest-cli.json ./
+COPY apps/api/src ./src
+COPY apps/api/tsconfig*.json ./
+COPY apps/api/nest-cli.json ./
 
 # Build the application
 RUN npm run build
