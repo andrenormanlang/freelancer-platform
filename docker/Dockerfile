@@ -52,8 +52,12 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy package.json first
+# Copy root package.json and the entire apps directory
 COPY package*.json ./
+COPY apps ./apps
+
+# Set working directory to the API folder
+WORKDIR /app/apps/api
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
@@ -61,22 +65,17 @@ RUN npm install --legacy-peer-deps
 # Install global NestJS CLI
 RUN npm install -g @nestjs/cli@$(node -p "require('./package.json').devDependencies['@nestjs/cli'].replace('^', '')")
 
-# Copy source code
-COPY src ./src
-COPY tsconfig*.json ./
-COPY nest-cli.json ./
-
 # Build the application
 RUN npm run build
 
 # Production stage
 FROM node:18-alpine AS production
 
-WORKDIR /app
+WORKDIR /app/apps/api
 
-COPY --from=base /app/package*.json ./
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/dist ./dist
+COPY --from=base /app/apps/api/package*.json ./
+COPY --from=base /app/apps/api/node_modules ./node_modules
+COPY --from=base /app/apps/api/dist ./dist
 
 EXPOSE 3000
 
