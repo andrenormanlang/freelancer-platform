@@ -16,8 +16,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // Body parser configuration
-  app.use(bodyParser.json({ limit: '10mb' }));
-  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+  app.use(bodyParser.json({ limit: '150mb' }));
+  app.use(bodyParser.urlencoded({ limit: '150mb', extended: true }));
 
   // Enable CORS
   app.enableCors({

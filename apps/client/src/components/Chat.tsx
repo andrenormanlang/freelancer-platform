@@ -12,6 +12,8 @@ import { v4 as uuidv4 } from "uuid";
 import { PaperClipIcon } from "@heroicons/react/20/solid";
 import { SocketContext } from "../contexts/SocketContext";
 import { uploadFile as apiUploadFile } from "../services/MindsMeshAPI";
+import { toast } from "./shadcn/ui/use-toast";
+import FilePreview from "./chat/FilePreview";
 
 interface Message {
   id: string;
@@ -35,7 +37,6 @@ const formatTime = (date: Date) => {
   return format(new Date(date), "HH:mm");
 };
 
-
 const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   chatPartner,
 }) => {
@@ -51,6 +52,8 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
 
   const { socket } = useContext(SocketContext); // Access socket from context
   const senderId = localStorage.getItem("userId");
+  const MAX_FILE_SIZE = 150 * 1024 * 1024;
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Track window focus/blur
   const [isActive, setIsActive] = useState(document.hasFocus());
@@ -236,7 +239,19 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "File too large",
+          description: `Maximum file size is 150MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
     }
   };
 
@@ -261,7 +276,24 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
 
     try {
       setIsUploading(true);
+      setUploadProgress(0);
+
+      // Simulated progress updates (in real app, you would get this from your upload API)
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 300);
+
       const data = await apiUploadFile(chatPartner.id, formData);
+
+      // Complete the progress
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       console.log("File upload response:", data);
       return {
@@ -274,6 +306,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       return null;
     } finally {
       setIsUploading(false);
+      setTimeout(() => setUploadProgress(0), 1000); // Reset progress after a delay
     }
   };
 
@@ -294,9 +327,7 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       id: messageId,
       senderId,
       receiverId: chatPartner.id,
-      text:
-        newMessage.trim() ||
-        (selectedFile ? `Sent a file: ${selectedFile.name}` : ""),
+      text: newMessage.trim(),
       timestamp: new Date(),
       status: "sending",
       isRead: false,
@@ -374,65 +405,69 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
   const renderFilePreview = (message: Message) => {
     if (!message.fileUrl) return null;
 
-    console.log(
-      "Rendering file preview:",
-      message.fileUrl,
-      message.fileType,
-      message.fileName
-    ); // Debug log
-
-    // Ensure we have the file name with extension
     const fileName = message.fileName || "file";
+    const fileType = message.fileType || "";
+    const isImage = fileType.startsWith("image/");
+    const isPdf = fileType === "application/pdf";
+    const isText = fileType.startsWith("text/");
+    const isDoc = fileType.includes("word") || fileType.includes("document");
 
-    const isImage = message.fileType?.startsWith("image/");
-    const isPdf = message.fileType === "application/pdf";
-    const isText = message.fileType?.startsWith("text/");
-
-    // Helper function to get appropriate file icon
+    // Helper function to get appropriate file icon with color
     const getFileIcon = () => {
-      if (isPdf) return <FileText size={16} className="mr-2" />;
-      if (isText) return <FileText size={16} className="mr-2" />;
-      return <File size={16} className="mr-2" />;
+      if (isPdf) return <FileText size={16} className="mr-2 text-red-500" />;
+      if (isText) return <FileText size={16} className="mr-2 text-green-500" />;
+      if (isDoc) return <FileText size={16} className="mr-2 text-blue-500" />;
+      return <File size={16} className="mr-2 text-gray-500" />;
     };
 
     return (
       <div className="mt-2 max-w-full">
         {isImage ? (
-          <a
-            href={message.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
-            download={fileName}
-          >
-            <img
-              src={message.fileUrl}
-              alt={fileName || "Attached image"}
-              className="max-w-full max-h-48 rounded-lg object-contain"
-            />
-            <span className="text-xs mt-1 flex items-center">
-              <Image size={12} className="mr-1" />
-              {fileName}
-            </span>
-          </a>
+          <div className="rounded-lg overflow-hidden border border-gray-200">
+            <a
+              href={message.fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+              download={fileName}
+            >
+              <div className="relative pb-[60%] bg-gray-100">
+                <img
+                  src={message.fileUrl}
+                  alt={fileName || "Attached image"}
+                  className="absolute inset-0 w-full h-full object-contain"
+                />
+              </div>
+              <div className="p-2 bg-white text-xs flex items-center text-gray-600">
+                <Image size={12} className="mr-1" />
+                <span className="truncate">{fileName}</span>
+              </div>
+            </a>
+          </div>
         ) : (
           <div className="flex flex-col space-y-2">
             <a
               href={message.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex items-center p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
               download={fileName}
             >
               {getFileIcon()}
-              <span className="text-sm truncate">{fileName}</span>
-            </a>
-            <a
-              href={message.fileUrl}
-              download={fileName}
-              className="text-xs text-blue-600 hover:underline flex items-center"
-            >
-              <span>Download {fileName}</span>
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-gray-800 truncate block">
+                  {fileName}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {isPdf
+                    ? "PDF Document"
+                    : isText
+                      ? "Text File"
+                      : isDoc
+                        ? "Word Document"
+                        : "File"}
+                </span>
+              </div>
             </a>
           </div>
         )}
@@ -575,38 +610,17 @@ const Chat: React.FC<{ chatPartner?: User | null; onClose?: () => void }> = ({
       {chatPartner && (
         <CardFooter className="p-4 bg-white border-t flex flex-col">
           {selectedFile && (
-            <div className="w-full px-3 py-2 mb-3 bg-blue-50 border border-blue-100 rounded-lg">
-              <div className="flex items-center">
-                {/* Add file type icon based on mimetype */}
-                {selectedFile.type.startsWith("image/") ? (
-                  <Image size={16} className="text-blue-500 mr-2" />
-                ) : selectedFile.type === "application/pdf" ? (
-                  <FileText size={16} className="text-red-500 mr-2" />
-                ) : (
-                  <File size={16} className="text-gray-500 mr-2" />
-                )}
+            <div className="w-full mb-3">
+              <FilePreview file={selectedFile} onRemove={handleRemoveFile} />
+            </div>
+          )}
 
-                {/* Filename with better truncation */}
-                <div
-                  className="flex-1 truncate max-w-[calc(100%-60px)]"
-                  title={selectedFile.name}
-                >
-                  <span className="text-sm font-medium text-gray-700">
-                    {selectedFile.name}
-                  </span>
-                  <span className="text-xs text-gray-500 block">
-                    {(selectedFile.size / 1024).toFixed(0)} KB
-                  </span>
-                </div>
-
-                <button
-                  onClick={handleRemoveFile}
-                  className="ml-2 p-1 rounded-full hover:bg-gray-200 text-gray-500"
-                  title="Remove file"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+          {selectedFile && isUploading && uploadProgress > 0 && (
+            <div className="w-full h-1 bg-gray-200 rounded-full mt-2 mb-3">
+              <div
+                className="h-full bg-blue-500 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${uploadProgress}%` }}
+              />
             </div>
           )}
 

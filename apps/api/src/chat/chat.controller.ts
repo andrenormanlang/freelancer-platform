@@ -123,7 +123,7 @@ export class ChatController {
       return await this.chatService.sendMessageWithId(
         sender,
         receiver,
-        text || `Sent a file: ${file.originalname}`, // Include full filename with extension in message
+        text || "", 
         messageId,
         uploadResult.secure_url,
         file.originalname, // Use full original filename with extension
