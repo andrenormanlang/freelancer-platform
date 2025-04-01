@@ -8,7 +8,7 @@ Built with React, NestJS, TypeScript, and modern cloud services, MindsMesh showc
 
 Each feature of this project represents both a functional solution and a learning milestone in my development journey 🌱.
 
-🧙‍♂️👨‍💻 ***At the moment I am implementing an AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements 👥🔍.***
+🧙‍♂️👨‍💻 ***At the moment I am implementing an AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements.*** 👥🔍
 
 🚢 ***New DevOps Features***
 
