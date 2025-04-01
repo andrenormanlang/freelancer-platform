@@ -19,7 +19,7 @@ Each feature of this project represents both a functional solution and a learnin
 
 - 🔄**GitHub Actions:** CI/CD pipeline.
   - CI Pipeline: Automatically runs tests and linting on pull requests and pushes to main branch
-  -✅ Build Verification: Ensures the application builds successfully in a clean environment.
+  - ✅ Build Verification: Ensures the application builds successfully in a clean environment.
   - Future Implementation: Automated deployment to staging/production environments.
   
 📎***New Chat Attachment feature:***
