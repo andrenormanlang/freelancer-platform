@@ -5,7 +5,7 @@ import { User } from "../types/types";
 import { Button } from "./shadcn/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "./shadcn/ui/card";
 import { Input } from "./shadcn/ui/input";
-import { Send, Loader2, X, Image, FileText, File } from "lucide-react";
+import { Send, Loader2, Image, FileText, File } from "lucide-react";
 import { format } from "date-fns";
 import { getChatMessages, createRoom } from "../services/MindsMeshAPI";
 import { v4 as uuidv4 } from "uuid";
