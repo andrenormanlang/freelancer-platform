@@ -8,7 +8,7 @@ Built with React, NestJS, TypeScript, and modern cloud services, MindsMesh showc
 
 Each feature of this project represents both a functional solution and a learning milestone in my development journey 🌱.
 
-🧙‍♂️👨‍💻 ***At the moment I am implementing an AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements 👥🔍.***
+🧙‍♂️👨‍💻 ***At the moment I am implementing an AI feature that helps recommending relevant freelancers to logged in employer users based on their project requirements.*** 👥🔍
 
 🚢 ***New DevOps Features***
 
@@ -19,7 +19,7 @@ Each feature of this project represents both a functional solution and a learnin
 
 - 🔄**GitHub Actions:** CI/CD pipeline.
   - CI Pipeline: Automatically runs tests and linting on pull requests and pushes to main branch
-  -✅ Build Verification: Ensures the application builds successfully in a clean environment.
+  - ✅ Build Verification: Ensures the application builds successfully in a clean environment.
   - Future Implementation: Automated deployment to staging/production environments.
   
 📎***New Chat Attachment feature:***
