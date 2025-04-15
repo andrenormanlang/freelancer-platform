@@ -23,7 +23,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://mindsmesh.vercel.app', 
-      'https://mindsmesh.netlify.app', 
+      'https://mindsmesh-freelance-platform.netlify.app/', 
       'http://localhost:5173' 
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
