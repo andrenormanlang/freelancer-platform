@@ -16,7 +16,21 @@ import { ChatService } from './chat.service';
 import { JwtPayload } from '@/auth/interfaces/jwt-payload.interface';
 import { RoomsService } from './rooms.service';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({
+  cors: {
+    origin: [
+      'https://mindsmesh.vercel.app',
+      'https://mindsmesh-docker-api.onrender.com',
+      'https://mindsmesh-freelance-platform.netlify.app',
+      'https://mindsmesh-freelance-platform.netlify.app/',
+      'http://localhost:5173',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+  },
+  allowEIO3: true,
+  transports: ['websocket', 'polling'],
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -113,10 +127,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @MessageBody()
-    message: { 
-      id: string; 
-      senderId: string; 
-      receiverId: string; 
+    message: {
+      id: string;
+      senderId: string;
+      receiverId: string;
       text: string;
       fileUrl?: string;
       fileName?: string;
@@ -166,7 +180,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             isRead: savedMessage.isRead,
             fileUrl: savedMessage.fileUrl,
             fileName: savedMessage.fileName,
-            fileType: savedMessage.fileType
+            fileType: savedMessage.fileType,
           });
 
         this.server.to(message.senderId).emit('messageDelivered', {
