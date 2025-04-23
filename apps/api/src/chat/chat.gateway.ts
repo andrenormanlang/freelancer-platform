@@ -21,8 +21,8 @@ import { RoomsService } from './rooms.service';
     origin: [
       'https://mindsmesh.vercel.app',
       'https://mindsmesh-docker-api.onrender.com',
-      'https://mindsmesh-freelance-platform.netlify.app',
-      'https://mindsmesh-freelance-platform.netlify.app/',
+      'https://mindsmesh.netlify.app',
+      'https://mindsmesh.netlify.app/',
       'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

@@ -76,7 +76,7 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className={`navbar p-2 h-16 top-0 z-50 transition-colors duration-500`}>
-      <div className="navbarContent container mx-auto flex justify-between items-center">
+      <div className="container mx-auto flex justify-between items-center">
         {/* Logo and Brand Name */}
         <Link
           to="/"
